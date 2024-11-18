@@ -1,0 +1,101 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model cart {
+  id       Int        @id @default(autoincrement())
+  userId   Int        @unique(map: "Cart_userId_key")
+  status   String
+  user     user       @relation(fields: [userId], references: [id], map: "Cart_userId_fkey")
+  cartitem cartitem[]
+}
+
+model cartitem {
+  id            Int     @id @default(autoincrement())
+  cartId        Int
+  productId     Int
+  quantidade    Int
+  precoUnitario Float
+  cart          cart    @relation(fields: [cartId], references: [id], map: "CartItem_cartId_fkey")
+  product       product @relation(fields: [productId], references: [id], map: "CartItem_productId_fkey")
+
+  @@index([cartId], map: "CartItem_cartId_fkey")
+  @@index([productId], map: "CartItem_productId_fkey")
+}
+
+model category {
+  id      Int       @id @default(autoincrement())
+  nome    String
+  product product[]
+}
+
+model order {
+  id            Int         @id @default(autoincrement())
+  userId        Int
+  dataCriacao   DateTime    @default(now())
+  status        String
+  total         Float
+  enderecoEnvio String
+  dataPagamento DateTime?
+  user          user        @relation(fields: [userId], references: [id], map: "Order_userId_fkey")
+  orderitem     orderitem[]
+
+  @@index([userId], map: "Order_userId_fkey")
+}
+
+model orderitem {
+  id            Int     @id @default(autoincrement())
+  orderId       Int
+  productId     Int
+  quantidade    Int
+  precoUnitario Float
+  order         order   @relation(fields: [orderId], references: [id], map: "OrderItem_orderId_fkey")
+  product       product @relation(fields: [productId], references: [id], map: "OrderItem_productId_fkey")
+
+  @@index([orderId], map: "OrderItem_orderId_fkey")
+  @@index([productId], map: "OrderItem_productId_fkey")
+}
+
+model product {
+  id            Int             @id @default(autoincrement())
+  nome          String
+  descricao     String
+  preco         Float
+  estoque       Int
+  categoriaId   Int
+  imagemUrl     String?
+  cartitem      cartitem[]
+  orderitem     orderitem[]
+  category      category        @relation(fields: [categoriaId], references: [id], map: "Product_categoriaId_fkey")
+  stockmovement stockmovement[]
+
+  @@index([categoriaId], map: "Product_categoriaId_fkey")
+}
+
+model stockmovement {
+  id         Int      @id @default(autoincrement())
+  productId  Int
+  quantidade Int
+  tipo       String
+  data       DateTime @default(now())
+  product    product  @relation(fields: [productId], references: [id], map: "StockMovement_productId_fkey")
+
+  @@index([productId], map: "StockMovement_productId_fkey")
+}
+
+model user {
+  id          Int      @id @default(autoincrement())
+  nome        String
+  email       String   @unique(map: "User_email_key")
+  senha       String
+  endereco    String?
+  dataCriacao DateTime @default(now())
+  telefone    String
+  cart        cart?
+  order       order[]
+}
