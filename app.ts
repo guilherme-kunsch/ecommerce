@@ -1,5 +1,5 @@
 import fastify from 'fastify'
-import { createUser } from './backend/controllers/userController';
+import { createUser, validationUser } from './backend/controllers/userController';
 
 export const app = fastify();
 
@@ -8,3 +8,4 @@ app.addHook('preHandler', async (request) => {
 })
 
 app.post("/user", createUser)
+app.post("/user/validationUser", validationUser)

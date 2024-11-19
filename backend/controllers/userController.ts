@@ -1,6 +1,7 @@
 import { FastifyReply, FastifyRequest } from "fastify";
-import { createUserSchema, userService } from "../services/userService";
+import { createUserSchema, userService, validateAndFindUser } from "../services/userService";
 import { z } from "zod";
+import { error } from "console";
 
 export const createUser = async (
   request: FastifyRequest<{ Body: z.infer<typeof createUserSchema> }>, 
@@ -18,3 +19,19 @@ export const createUser = async (
     reply.code(err.statusCode || 500).send({ error: err.message });
   }
 };
+
+export const validationUser = async(
+  request: FastifyRequest<{Body: z.infer<typeof validateAndFindUser>}>,
+  reply: FastifyReply
+): Promise<void> => {
+  try {
+    const body = request.body;
+    const validationPassword = await userService.loginUser(body);
+
+    return reply.code(201).send({
+      message: "Acessando..."
+    })
+  } catch(err: any) {
+    reply.code(err.statusCode || 400).send({error: err.message})
+  }
+}
