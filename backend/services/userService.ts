@@ -6,16 +6,23 @@ import { FastifyReply, FastifyRequest } from "fastify";
 const prisma = new PrismaClient();
 
 export const createUserSchema = z.object({
-  nome: z.string().min(1, "Nome é obrigatório"),
-  email: z.string().email("E-mail inválido"),
-  senha: z.string().min(6, "A senha deve ter pelo menos 6 caracteres"),
-  endereco: z.string().optional(),
-  telefone: z.string().regex(/^\d+$/, "Telefone deve conter apenas números"),
+  name: z.string().min(1, "Name is required"), 
+  email: z.string().email("Invalid email"),
+  password: z.string().min(6, "Password must be at least 6 characters long"),
+  phone: z.string().min(10, "Phone must have at least 10 digits"),
+  address: z.object({
+    street: z.string().min(1, "Street is required"),
+    neighborhood: z.string().min(1, "Neighborhood is required"),
+    number: z.string().min(1, "Number is required"),
+    city: z.string().min(1, "City is required"),
+    state: z.string().min(2, "State is required"), 
+    zipCode: z.string().min(5, "Zip code must be at least 5 characters"),
+  })
 });
 
 export const validateAndFindUser = z.object({
-  email: z.string().email("E-mail inválido"),
-  senha: z.string().min(6, "A senha deve ter pelo menos 6 caracteres")
+  email: z.string().email("Invalid email"),
+  password: z.string().min(6, "Password must be at least 6 characters long")
 })
 
 export const hashPassword = async (password: string) => {
@@ -35,14 +42,20 @@ export const userService = {
       throw new Error("E-mail já está em uso");
     }
 
-    const hashedPassword = await hashPassword(parsedInput.senha);
+    const hashedPassword = await hashPassword(parsedInput.password);
 
     const newUser = await prisma.user.create({
       data: {
         ...parsedInput,
-        senha: hashedPassword,
+        password: hashedPassword,
+        address: {
+          create: {
+            ...parsedInput.address,
+          }
+        }
       },
     });
+    
 
     return newUser;
   },
@@ -57,16 +70,16 @@ export const userService = {
     })
 
     if (!user) {
-      throw new Error("E-mail ou senha incorretos");
+      throw new Error("Incorrect email or password");
     }
 
-    const isPasswordValid = await bcrypt.compare(parsedInput.senha, user.senha);
+    const isPasswordValid = await bcrypt.compare(parsedInput.password, user.password);
     if (!isPasswordValid) {
-      throw new Error("E-mail ou senha incorretos");
+      throw new Error("Incorrect email or password");
     }
 
     return {
-      message: "Login realizado com sucesso!",
+      message: "Login successfully!",
       userId: user.id,
       email: user.email,
     };
