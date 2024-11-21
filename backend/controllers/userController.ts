@@ -1,7 +1,6 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import { createUserSchema, userService, validateAndFindUser } from "../services/userService";
 import { z } from "zod";
-import { error } from "console";
 
 export const createUser = async (
   request: FastifyRequest<{ Body: z.infer<typeof createUserSchema> }>, 
@@ -28,10 +27,12 @@ export const validationUser = async(
     const body = request.body;
     const validationPassword = await userService.loginUser(body);
 
-    return reply.code(201).send({
-      message: "Acessando..."
-    })
-  } catch(err: any) {
-    reply.code(err.statusCode || 400).send({error: err.message})
+    return reply.code(200).send({
+      message: 'Acessando...',
+    });
+  } catch (err: any) {
+    reply
+      .code(err.statusCode || 400)
+      .send({ error: err.message || 'Erro ao autenticar o usuário' });
   }
 }

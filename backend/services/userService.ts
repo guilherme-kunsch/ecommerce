@@ -56,7 +56,6 @@ export const userService = {
       },
     });
     
-
     return newUser;
   },
 

@@ -1,5 +1,5 @@
 import fastify from 'fastify'
-import { createUser, validationUser } from './backend/controllers/userController';
+import { createUser, validationUser } from './controllers/userController';
 
 export const app = fastify();
 
