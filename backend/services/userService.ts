@@ -62,6 +62,8 @@ export const userService = {
   loginUser: async (input: z.infer<typeof validateAndFindUser>) => {
     const parsedInput = validateAndFindUser.parse(input)
 
+    console.log(parsedInput)
+
     const user = await prisma.user.findUnique({
       where: {
         email: parsedInput.email
